@@ -19,21 +19,17 @@ library(forcats)
 library(lhs)
 
 
-R_P1=read.csv("P_1968_1997/Erosivity_WS.csv")
+R_P1=read.csv("P_1968_1997/Erosivity_WS_3.csv")
 colnames(R_P1)[1]="Period"
 R_P1$Period="1968-1997"
-R_P2=read.csv("P_1978_2007/Erosivity_WS.csv")
+R_P2=read.csv("P_1978_2007/Erosivity_WS_3.csv")
 colnames(R_P2)[1]="Period"
 R_P2$Period="1978-2007"
-R_P3=read.csv("P_1988_2017/Erosivity_WS.csv")
+R_P3=read.csv("P_1988_2017/Erosivity_WS_3.csv")
 colnames(R_P3)[1]="Period"
 R_P3$Period="1988-2017"
 
 df_long=rbind(R_P1,R_P2,R_P3)
-
-
-b=boxplot(R_P2$Erosivity_year_YunXie2016)
-b
 
 df_long$Period=as.factor(df_long$Period)
 
@@ -83,8 +79,9 @@ rm(fig)
 
 
 #### Figure
+#pal <- c("#FF8C00", "#A034F0", "#159090")
 
-pal <- c("#FF8C00", "#A034F0", "#159090")
+pal <- c("#90BA4C", "#DD9D31", "#E25247")
 
 add_sample <- function(x){
   return(c(y = max(x) + .025, 
@@ -93,7 +90,7 @@ add_sample <- function(x){
 
 fig_comp=df_long %>% 
   group_by(Period) %>% 
-  ggplot(aes(x = fct_rev(Period), y = Erosivity_year_YunXie2016)) + 
+  ggplot(aes(x = fct_rev(Period), y = Erosivity_year_Richardson1983)) + 
   ggdist::stat_halfeye(
     aes(color = Period,
         fill = after_scale(lighten(color, .5))),
@@ -158,7 +155,7 @@ fig_comp=df_long %>%
   scale_fill_manual(values = pal, guide = "none") +
   labs(
     x = NULL,
-    y = "R Factor (MJ mm)/(ha h yr)") +
+    y = expression(R~Factor~(MJ~mm~ha^{-1}~h^{-1}~yr^{-1})))+
   theme_minimal(base_family = "Zilla Slab", base_size = 8) +
   theme(
     panel.grid.minor = element_blank(),
@@ -197,10 +194,10 @@ dev.off()
 summary=df_long%>% group_by(Period,Ecoregion)%>% 
   summarize(
     n=n(),
-    m=mean(Erosivity_year_YunXie2016),
-    sd=sd(Erosivity_year_YunXie2016),
-    min=min(Erosivity_year_YunXie2016),
-    max=max(Erosivity_year_YunXie2016)
+    m=mean(Erosivity_year_Richardson1983),
+    sd=sd(Erosivity_year_Richardson1983),
+    min=min(Erosivity_year_Richardson1983),
+    max=max(Erosivity_year_Richardson1983)
   )
 
 write.csv(summary,"Summary_erosivity_by_Ecoregion.csv")
@@ -209,21 +206,22 @@ write.csv(summary,"Summary_erosivity_by_Ecoregion.csv")
 summary=df_long%>% group_by(Period)%>% 
   summarize(
     n=n(),
-    m=mean(Erosivity_year_YunXie2016),
-    sd=sd(Erosivity_year_YunXie2016),
-    min=min(Erosivity_year_YunXie2016),
-    max=max(Erosivity_year_YunXie2016),
-    skewness(Erosivity_year_YunXie2016),
-    kurtosis(Erosivity_year_YunXie2016)
+    m=mean(Erosivity_year_Richardson1983),
+    me=median(Erosivity_year_Richardson1983),
+    sd=sd(Erosivity_year_Richardson1983),
+    min=min(Erosivity_year_Richardson1983),
+    max=max(Erosivity_year_Richardson1983),
+    skewness(Erosivity_year_Richardson1983),
+    kurtosis(Erosivity_year_Richardson1983)
   )
 
 write.csv(summary,"Summary_erosivity_by_Period.csv")
 
-kruskal.test <- kruskal.test(Erosivity_year_YunXie2016 ~ Period, data = df_long)
+kruskal.test <- kruskal.test(Erosivity_year_Richardson1983 ~ Period, data = df_long)
 print(kruskal.test)
 
 library(dunn.test)
-dunn_result <- dunn.test(df_long$Erosivity_year_YunXie2016, df_long$Period, method = "bonferroni")
+dunn_result <- dunn.test(df_long$Erosivity_year_Richardson1983, df_long$Period, method = "bonferroni")
 print(dunn_result)
 
 
@@ -247,3 +245,4 @@ reclass_matrix <- matrix(c(
 classified_raster <- classify(R_Gloreda, rcl = reclass_matrix)
 
 writeRaster(classified_raster,"C:\\Users\\vimiv\\OneDrive - AGROSAVIA - CORPORACION COLOMBIANA DE INVESTIGACION AGROPECUARIA\\Documentos\\DOCTORADO\\Proyecto_CONAHCYT\\SHP\\GloREDa_Raster\\RFactor_Annual_classified.tif")
+
